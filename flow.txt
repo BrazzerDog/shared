@@ -1,0 +1,85 @@
+MVP: Локальный сервис обмена файлами
+
+1. Пользователи системы:
+- 1С Предприятие (загрузка/чтение своих файлов + чтение определенных файлов других сервисов)
+- Битрикс24 (загрузка/чтение своих файлов + чтение определенных файлов других сервисов)
+- Личный кабинет (загрузка/чтение своих файлов + чтение определенных файлов других сервисов)
+- Администратор (полный доступ через веб-интерфейс)
+
+2. Технический стек MVP:
+- Backend: FastAPI (Python) - для REST API
+- ORM: SQLite - для работы с базой данных
+- База данных: SQLite - хранение метаданных файлов и прав доступа
+  (с возможностью легкой миграции на PostgreSQL)
+- Файловое хранилище: локальная файловая система с организованной структурой директорий
+- Frontend (админка): NextJS
+
+3. Структура хранения:
+/storage
+  /1c
+  /bitrix
+  /portal
+  /shared
+
+4. Основные эндпоинты API:
+- POST /api/v1/files/upload
+- GET /api/v1/files/download/{file_id}
+- GET /api/v1/files/list
+- DELETE /api/v1/files/{file_id}
+- GET /api/v1/permissions/{service_id}
+- GET /api/v1/files/{file_id}/info
+- POST /api/v1/files/{file_id}/share
+- GET /api/v1/files/search
+- POST /api/v1/files/{file_id}/extend
+- GET /api/v1/stats
+
+5. Система прав:
+Роли:
+- 1C_SERVICE
+- BITRIX_SERVICE
+- PORTAL_SERVICE
+- ADMIN
+
+Права:
+- READ_OWN
+- WRITE_OWN
+- READ_SHARED
+- WRITE_SHARED
+- MANAGE_ALL (только для админа)
+
+
+7. Веб-интерфейс пользователей:
+- Просмотр всех файлов
+- Управление правами доступа
+- Мониторинг использования (админ)
+- Очистка устаревших файлов (админ)
+
+      8. Модели данных SQLite:
+      - FileModel:
+        - id: Integer, Primary Key
+        - filename: String
+        - path: String
+        - service: String (1c/bitrix/portal)
+        - is_shared: Boolean
+        - created_at: DateTime
+        - size: Integer  // размер файла
+        - mime_type: String  // тип файла
+        - hash: String  // контрольная сумма
+        - expires_at: DateTime  // срок хранения
+        - owner_service: String  // сервис-владелец
+  
+- PermissionModel:
+  - id: Integer, Primary Key
+  - service_id: String
+  - role: String
+  - permission: String
+  - target_service: String
+  
+- AccessLogModel:
+  - id: Integer, Primary Key
+  - file_id: Integer, Foreign Key -> FileModel
+  - service_id: String
+  - action: String
+  - timestamp: DateTime
+  - ip_address: String  // IP адрес
+  - status: String  // результат операции (success/failure) 

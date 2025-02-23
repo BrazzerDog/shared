@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Storage</title>
+    <style>
+        .file-card { border: 1px solid #ddd; margin: 10px; padding: 10px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Files ({{ user.service }})</h1>
+    
+    <div class="upload-form">
+        <form action="/api/files/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+
+    <div class="files-list">
+        {% for file in files %}
+        <div class="file-card">
+            <h3>{{ file.filename }}</h3>
+            <p>Owner: {{ file.owner_service }}</p>
+            <button onclick="downloadFile({{ file.id }})">Download</button>
+            <button onclick="deleteFile({{ file.id }})">Delete</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Простой JS для базовых операций
+        function downloadFile(id) {
+            window.location.href = `/api/files/download/${id}`;
+        }
+        
+        function deleteFile(id) {
+            if(confirm('Delete file?')) {
+                fetch(`/api/files/${id}`, {method: 'DELETE'})
+                    .then(() => window.location.reload());
+            }
+        }
+    </script>
+</body>
+</html> 
